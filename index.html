@@ -130,8 +130,61 @@ var loadingText = document.querySelector("#loading-text");
       };
       var unityInstance = UnityLoader.instantiate("gameContainer", "Build/CupheadPort.json");
       loadingText.remove();
+
+      // --- CUSTOM KEYBOARD AND TOUCHPAD INPUT TRANSLATOR LAYER ---
+      const gameCanvas = document.querySelector("canvas") || window;
+      
+      const CUSTOM_MAPPINGS = {
+          'KeyA': { key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37 },
+          'KeyD': { key: 'ArrowRight', code: 'ArrowRight', keyCode: 39 },
+          'KeyW': { key: 'z', code: 'KeyZ', keyCode: 90 },
+          'KeyS': { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40 },
+          'KeyE': { key: 'c', code: 'KeyC', keyCode: 67 }
+      };
+
+      function sendTranslatedInput(type, config) {
+          const gameEvent = new KeyboardEvent(type, {
+              key: config.key,
+              code: config.code,
+              keyCode: config.keyCode,
+              which: config.keyCode,
+              bubbles: true,
+              cancelable: true
+          });
+          gameCanvas.dispatchEvent(gameEvent);
+      }
+
+      window.addEventListener('keydown', (e) => {
+          if (CUSTOM_MAPPINGS[e.code]) {
+              e.preventDefault();
+              sendTranslatedInput('keydown', CUSTOM_MAPPINGS[e.code]);
+          }
+      });
+
+      window.addEventListener('keyup', (e) => {
+          if (CUSTOM_MAPPINGS[e.code]) {
+              e.preventDefault();
+              sendTranslatedInput('keyup', CUSTOM_MAPPINGS[e.code]);
+          }
+      });
+
+      window.addEventListener('mousedown', (e) => {
+          if (e.button === 0) { // Touchpad Click / Primary Mouse Click
+              sendTranslatedInput('keydown', { key: 'x', code: 'KeyX', keyCode: 88 });
+          }
+      });
+
+      window.addEventListener('mouseup', (e) => {
+          if (e.button === 0) {
+              sendTranslatedInput('keyup', { key: 'x', code: 'KeyX', keyCode: 88 });
+          }
+      });
+
+      // Blocks context layout menu popups from interrupting actions
+      window.addEventListener('contextmenu', e => e.preventDefault());
+      // --- END TRANSLATOR LAYER ---
+
     })();
     </script>
   </body>
 </html>
-</body>
